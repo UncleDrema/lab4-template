@@ -8,28 +8,126 @@ on:
       - master
 jobs:
   build:
-    name: Autograding
+    name: Build and Push to Yandex Cloud Registry
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - uses: docker/setup-buildx-action@v2
+      - name: Set up JDK 25
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '25'
+          cache: 'gradle'
+
+      - name: Install Yandex Cloud CLI
+        run: |
+          curl https://storage.yandexcloud.net/yandexcloud-yc/install.sh | bash
+
+      - name: Configure Yandex Cloud
+        env:
+          YC_OAUTH_TOKEN: ${{ secrets.YC_OAUTH_TOKEN }}
+          YC_FOLDER_ID: b1g793uupj43hjh55c3m
+          YC_REGISTRY: cr.yandex/crpmeck79ctbb2r5j4j5
+        run: |
+          yc config set token "$YC_OAUTH_TOKEN"
+          yc config set folder-id "$YC_FOLDER_ID"
+          yc container registry configure-docker
+
+      - name: Build & publish image with bootBuildImage - Flights
+        working-directory: ./services/flights
+        env:
+          YC_REGISTRY: cr.yandex/crpmeck79ctbb2r5j4j5
+        run: ./gradlew --no-daemon bootBuildImage --imageName=${{ env.YC_REGISTRY }}/flights:${{ github.sha }}
+
+      - name: Push image to Yandex Cloud Registry - Flights
+        env:
+          YC_REGISTRY: cr.yandex/crpmeck79ctbb2r5j4j5
+        run: |
+          IMAGE_SHA=${{ env.YC_REGISTRY }}/flights:${{ github.sha }}
+          IMAGE_LATEST=${{ env.YC_REGISTRY }}/flights:latest
+          echo "Tagging $IMAGE_SHA as $IMAGE_LATEST"
+          docker tag $IMAGE_SHA $IMAGE_LATEST
+          echo "Pushing $IMAGE_SHA"
+          docker push $IMAGE_SHA
+          echo "Pushing $IMAGE_LATEST"
+          docker push $IMAGE_LATEST
+
+      - name: Build & publish image with bootBuildImage - Tickets
+        working-directory: ./services/tickets
+        env:
+          YC_REGISTRY: cr.yandex/crpmeck79ctbb2r5j4j5
+        run: ./gradlew --no-daemon bootBuildImage --imageName=${{ env.YC_REGISTRY }}/tickets:${{ github.sha }}
+
+      - name: Push image to Yandex Cloud Registry - Tickets
+        env:
+          YC_REGISTRY: cr.yandex/crpmeck79ctbb2r5j4j5
+        run: |
+          IMAGE_SHA=${{ env.YC_REGISTRY }}/tickets:${{ github.sha }}
+          IMAGE_LATEST=${{ env.YC_REGISTRY }}/tickets:latest
+          echo "Tagging $IMAGE_SHA as $IMAGE_LATEST"
+          docker tag $IMAGE_SHA $IMAGE_LATEST
+          echo "Pushing $IMAGE_SHA"
+          docker push $IMAGE_SHA
+          echo "Pushing $IMAGE_LATEST"
+          docker push $IMAGE_LATEST
+
+      - name: Build & publish image with bootBuildImage - Privileges
+        working-directory: ./services/privileges
+        env:
+          YC_REGISTRY: cr.yandex/crpmeck79ctbb2r5j4j5
+        run: ./gradlew --no-daemon bootBuildImage --imageName=${{ env.YC_REGISTRY }}/privileges:${{ github.sha }}
+
+      - name: Push image to Yandex Cloud Registry - Privileges
+        env:
+          YC_REGISTRY: cr.yandex/crpmeck79ctbb2r5j4j5
+        run: |
+          IMAGE_SHA=${{ env.YC_REGISTRY }}/privileges:${{ github.sha }}
+          IMAGE_LATEST=${{ env.YC_REGISTRY }}/privileges:latest
+          echo "Tagging $IMAGE_SHA as $IMAGE_LATEST"
+          docker tag $IMAGE_SHA $IMAGE_LATEST
+          echo "Pushing $IMAGE_SHA"
+          docker push $IMAGE_SHA
+          echo "Pushing $IMAGE_LATEST"
+          docker push $IMAGE_LATEST
+
+      - name: Build & publish image with bootBuildImage - Gateway
+        working-directory: ./services/gateway
+        env:
+          YC_REGISTRY: cr.yandex/crpmeck79ctbb2r5j4j5
+        run: ./gradlew --no-daemon bootBuildImage --imageName=${{ env.YC_REGISTRY }}/gateway:${{ github.sha }}
+
+      - name: Push image to Yandex Cloud Registry - Gateway
+        env:
+          YC_REGISTRY: cr.yandex/crpmeck79ctbb2r5j4j5
+        run: |
+          IMAGE_SHA=${{ env.YC_REGISTRY }}/gateway:${{ github.sha }}
+          IMAGE_LATEST=${{ env.YC_REGISTRY }}/gateway:latest
+          echo "Tagging $IMAGE_SHA as $IMAGE_LATEST"
+          docker tag $IMAGE_SHA $IMAGE_LATEST
+          echo "Pushing $IMAGE_SHA"
+          docker push $IMAGE_SHA
+          echo "Pushing $IMAGE_LATEST"
+          docker push $IMAGE_LATEST
+
+
+#      - uses: docker/setup-buildx-action@v2
 
       # TODO build and run unit tests
 
-      - name: Build images
-        timeout-minutes: 10
-        run: docker compose build --push
+#      - name: Build images
+#        timeout-minutes: 10
+#        run: docker compose build --push
 
       # TODO deploy to k8s with liveness and readyness probes
 
-      - name: Wait before services are ready
-        run: kubectl wait -n test -l app.kubernetes.io/name=gateway pod --for=condition=Ready --timeout 3m
+#      - name: Wait before services are ready
+#        run: kubectl wait -n test -l app.kubernetes.io/name=gateway pod --for=condition=Ready --timeout 3m
       
       # TODO setup parameters in classroom/autograding.json
       
-      - name: Autograding
-        uses: education/autograding@v1
-        continue-on-error: true
+#      - name: Autograding
+#        uses: education/autograding@v1
+#        continue-on-error: true
