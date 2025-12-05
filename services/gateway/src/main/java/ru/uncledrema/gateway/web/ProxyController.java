@@ -80,7 +80,7 @@ public class ProxyController {
 
     private String selectTarget(String forwardPath) {
         String p = forwardPath.toLowerCase();
-        if (p.startsWith("/flights")) return flightsBase;
+        if (p.startsWith("/flights") || p.startsWith("/airports")) return flightsBase;
         if (p.startsWith("/tickets")) return ticketsBase;
         if (p.startsWith("/privilege") || p.startsWith("/privileges")) return privilegesBase;
         return null;

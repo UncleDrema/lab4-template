@@ -4,7 +4,7 @@
 	"values": [
 		{
 			"key": "baseUrl",
-			"value": "http://localhost:8080"
+			"value": "http://130.193.57.16.nip.io"
 		},
 		{
 			"key": "flightNumber",

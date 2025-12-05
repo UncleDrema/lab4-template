@@ -113,6 +113,13 @@ jobs:
           echo "Pushing $IMAGE_LATEST"
           docker push $IMAGE_LATEST
 
+      - name: Run API Tests
+        timeout-minutes: 5
+        run: ./scripts/test-script.sh
+        env:
+          VARIANT: v1
+          DEPLOYMENT_NAME: privileges
+          NAMESPACE: rsoi
 
 #      - uses: docker/setup-buildx-action@v2
 
