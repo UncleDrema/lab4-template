@@ -37,6 +37,29 @@ jobs:
           yc config set folder-id "$YC_FOLDER_ID"
           yc container registry configure-docker
 
+      - name: Install Helm
+        run: |
+          curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+          helm version
+
+      - name: Configure kubectl for Yandex Cloud
+        env:
+          YC_OAUTH_TOKEN: ${{ secrets.YC_OAUTH_TOKEN }}
+          YC_CLUSTER_ID: catq2lo9dmaukeknlhqq
+          YC_FOLDER_ID: b1g793uupj43hjh55c3m
+        run: |
+          yc container cluster get-credentials "$YC_CLUSTER_ID" --external --force --folder-id "$YC_FOLDER_ID"
+          kubectl cluster-info
+          kubectl get nodes
+
+      - name: Run API Tests
+        timeout-minutes: 5
+        run: ./scripts/test-script.sh
+        env:
+          VARIANT: v1
+          DEPLOYMENT_NAME: privileges
+          NAMESPACE: rsoi
+
       - name: Build & publish image with bootBuildImage - Flights
         working-directory: ./services/flights
         env:
@@ -113,13 +136,29 @@ jobs:
           echo "Pushing $IMAGE_LATEST"
           docker push $IMAGE_LATEST
 
-      - name: Run API Tests
-        timeout-minutes: 5
-        run: ./scripts/test-script.sh
-        env:
-          VARIANT: v1
-          DEPLOYMENT_NAME: privileges
-          NAMESPACE: rsoi
+      - name: Update Flights deployment
+        run: |
+          helm upgrade flights ./charts/rsoi -f ./charts/rsoi/values-flights.yaml -n rsoi
+          kubectl rollout restart deployment flights -n rsoi
+          kubectl rollout status deployment flights -n rsoi --timeout=1m
+
+      - name: Update Tickets deployment
+        run: |
+          helm upgrade tickets ./charts/rsoi -f ./charts/rsoi/values-tickets.yaml -n rsoi
+          kubectl rollout restart deployment tickets -n rsoi
+          kubectl rollout status deployment tickets -n rsoi --timeout=1m
+
+      - name: Update Privileges deployment
+        run: |
+          helm upgrade privileges ./charts/rsoi -f ./charts/rsoi/values-privileges.yaml -n rsoi
+          kubectl rollout restart deployment privileges -n rsoi
+          kubectl rollout status deployment privileges -n rsoi --timeout=1m
+
+      - name: Update Gateway deployment
+        run: |
+          helm upgrade gateway ./charts/rsoi -f ./charts/rsoi/values-gateway.yaml -n rsoi
+          kubectl rollout restart deployment gateway -n rsoi
+          kubectl rollout status deployment gateway -n rsoi --timeout=1m
 
 #      - uses: docker/setup-buildx-action@v2
 
