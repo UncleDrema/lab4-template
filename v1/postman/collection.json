@@ -1017,6 +1017,15 @@
 										],
 										"type": "text/javascript"
 									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"setTimeout(() => {}, 40000); "
+										],
+										"type": "text/javascript"
+									}
 								}
 							],
 							"request": {
@@ -1071,15 +1080,6 @@
 											"    ",
 											"    pm.environment.set(\"ticketUid\", response.ticketUid)",
 											"})"
-										],
-										"type": "text/javascript"
-									}
-								},
-								{
-									"listen": "prerequest",
-									"script": {
-										"exec": [
-											"setTimeout(() => {}, 30000); "
 										],
 										"type": "text/javascript"
 									}
@@ -1372,7 +1372,7 @@
 									"listen": "prerequest",
 									"script": {
 										"exec": [
-											"setTimeout(() => {}, 30000); "
+											"setTimeout(() => {}, 40000); "
 										],
 										"type": "text/javascript"
 									}
