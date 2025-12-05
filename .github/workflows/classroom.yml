@@ -52,14 +52,6 @@ jobs:
           kubectl cluster-info
           kubectl get nodes
 
-      - name: Run API Tests
-        timeout-minutes: 5
-        run: ./scripts/test-script.sh
-        env:
-          VARIANT: v1
-          DEPLOYMENT_NAME: privileges
-          NAMESPACE: rsoi
-
       - name: Build & publish image with bootBuildImage - Flights
         working-directory: ./services/flights
         env:
@@ -159,7 +151,14 @@ jobs:
           helm upgrade gateway ./charts/rsoi -f ./charts/rsoi/values-gateway.yaml -n rsoi
           kubectl rollout restart deployment gateway -n rsoi
           kubectl rollout status deployment gateway -n rsoi --timeout=1m
-
+      
+      - name: Run API Tests
+        timeout-minutes: 5
+        run: ./scripts/test-script.sh
+        env:
+          VARIANT: v1
+          DEPLOYMENT_NAME: privileges
+          NAMESPACE: rsoi
 #      - uses: docker/setup-buildx-action@v2
 
       # TODO build and run unit tests
