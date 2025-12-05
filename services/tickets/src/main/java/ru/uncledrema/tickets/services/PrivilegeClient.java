@@ -1,10 +1,12 @@
 package ru.uncledrema.tickets.services;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
 import ru.uncledrema.tickets.dto.BalanceOperationDto;
 import ru.uncledrema.tickets.dto.PrivilegeShortInfoDto;
@@ -12,6 +14,7 @@ import ru.uncledrema.tickets.dto.PrivilegeShortInfoDto;
 import java.util.Optional;
 import java.util.UUID;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class PrivilegeClient {

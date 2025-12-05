@@ -2,7 +2,6 @@
 ### Node template
 # Logs
 infra/
-charts/
 logs
 *.log
 npm-debug.log*

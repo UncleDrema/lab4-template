@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.util.List;
 
+
 @Schema(description = "Полная информация о пользователе")
 public record UserInfoDto(
         @Schema(description = "Информация о билетах поезда")
